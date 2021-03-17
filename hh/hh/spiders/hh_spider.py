@@ -13,25 +13,37 @@ class HhSpiderSpider(scrapy.Spider):
             url = args.url  
             assert(splash:go(url))
             assert(splash:wait(1))
+
+            input_box = assert(splash:select("input.HH-SearchFromSuggest-Suggest"))
+            input_box:focus()
+            input_box:send_text("Python")
+            assert(splash:wait(1))
+
+            input_box:send_keys("<Enter>")
+            assert(splash:wait(1))
+
             splash:set_viewport_full()
             return splash:html()
         end
     '''
 
     def start_requests(self):
-        headers = {
-            'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
-        }
-        yield SplashRequest(url="https://hh.kz/vacancy/43021761?query=python",
+        # headers = {
+        #     'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+        # }
+        yield SplashRequest(url="https://hh.kz",
                             callback=self.parse,
                             endpoint='execute',
                             args={
                                 'lua_source': self.lua_script
                             },
-                            headers=headers)
+                            # headers=headers
+                            )
 
     def parse(self, response):
-        print(response.body)
+        yield {
+            'resp': response.body
+        }
         # title = response.css('div.vacancy-title>h1>span: text').get()
         # company = response.css('a.vacancy-company-name>span>span: text').get()
         # money = response.css('p.vacancy-salary>span: text').get()
